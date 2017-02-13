@@ -24,6 +24,7 @@ allprojects {
  
 ```gradle
 dependencies {
+    compile 'com.android.support:support-annotations:25.1.1'
     compile 'com.github.SUKI-Huang:android_image_loader_pro:1.0.0'
     compile files('libs/universal-image-loader-1.9.5.jar')
 }
