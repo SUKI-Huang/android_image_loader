@@ -70,6 +70,10 @@ public class ImageLoaderPro {
         IMAGE_LOADER.init(config);
     }
 
+    public static ImageLoader getImageLoader(){
+        return IMAGE_LOADER;
+    }
+
     public static final String getAssetsUri(String assetsPath) {
         return PATH_ASSETS + assetsPath;
     }
