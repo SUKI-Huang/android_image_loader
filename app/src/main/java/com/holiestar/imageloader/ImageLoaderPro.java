@@ -3,8 +3,6 @@ package com.holiestar.imageloader;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.renderscript.Allocation;
 import android.renderscript.Element;
@@ -25,8 +23,6 @@ import com.nostra13.universalimageloader.core.display.SimpleBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.nostra13.universalimageloader.utils.L;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,8 +43,8 @@ public class ImageLoaderPro {
     private static final Options OPTION_NORMAL = new Options();
     private static final Options OPTION_BLUR = new Options().setBlur(25);
 
-    private static final ImageLoaderProListener IMAGE_LOADER_PRO_LISTENER_NORMAL = new ImageLoaderProListener(null, 0, false, 0, true, 500);
-    private static final ImageLoaderProListener IMAGE_LOADER_PRO_LISTENER_BLUR = new ImageLoaderProListener(null, 0, true, 25, true, 500);
+    private static final ImageLoaderProListener IMAGE_LOADER_PRO_LISTENER_NORMAL = new ImageLoaderProListener(false, 0, true, 500);
+    private static final ImageLoaderProListener IMAGE_LOADER_PRO_LISTENER_BLUR = new ImageLoaderProListener(true, 25, true, 500);
 
     private ImageLoaderPro() {
     }
@@ -70,7 +66,7 @@ public class ImageLoaderPro {
         IMAGE_LOADER.init(config);
     }
 
-    public static ImageLoader getImageLoader(){
+    public static ImageLoader getImageLoader() {
         return IMAGE_LOADER;
     }
 
@@ -87,122 +83,46 @@ public class ImageLoaderPro {
     }
 
     public static void load(ImageView iv, String imageUri) {
-        load(iv, imageUri, OPTION_NORMAL.getDefaultUri(), OPTION_NORMAL.getCacheUri(), OPTION_NORMAL.getCacheExpiredDuration(), OPTION_NORMAL.isEnableBlur(), OPTION_NORMAL.getBlurFactor(), OPTION_NORMAL.isEnableFade(), OPTION_NORMAL.getFadeDuration(), IMAGE_LOADER_PRO_LISTENER_NORMAL);
+        load(iv, imageUri, OPTION_NORMAL.getDefaultUri(), OPTION_NORMAL.isEnableBlur(), OPTION_NORMAL.getBlurFactor(), OPTION_NORMAL.isEnableFade(), OPTION_NORMAL.getFadeDuration(), IMAGE_LOADER_PRO_LISTENER_NORMAL);
     }
 
     public static void loadBlur(ImageView iv, String imageUri) {
-        load(iv, imageUri, OPTION_BLUR.getDefaultUri(), OPTION_BLUR.getCacheUri(), OPTION_BLUR.getCacheExpiredDuration(), OPTION_BLUR.isEnableBlur(), OPTION_BLUR.getBlurFactor(), OPTION_BLUR.isEnableFade(), OPTION_BLUR.getFadeDuration(), IMAGE_LOADER_PRO_LISTENER_BLUR);
+        load(iv, imageUri, OPTION_BLUR.getDefaultUri(), OPTION_BLUR.isEnableBlur(), OPTION_BLUR.getBlurFactor(), OPTION_BLUR.isEnableFade(), OPTION_BLUR.getFadeDuration(), IMAGE_LOADER_PRO_LISTENER_BLUR);
     }
 
     public static void loadBlur(ImageView iv, String imageUri, @IntRange(from = 0, to = 25) int blurFactor) {
-        load(iv, imageUri, null, null, 0, false, 0, false, 0, ImageLoaderProListener.clone(IMAGE_LOADER_PRO_LISTENER_BLUR).setBlurFactor(blurFactor));
+        load(iv, imageUri, null, false, 0, false, 0, ImageLoaderProListener.clone(IMAGE_LOADER_PRO_LISTENER_BLUR).setBlurFactor(blurFactor));
     }
 
     public static void load(ImageView iv, String imageUri, Options options) {
         if (options != null) {
-            load(iv, imageUri, options.getDefaultUri(), options.getCacheUri(), options.getCacheExpiredDuration(), options.isEnableBlur(), options.getBlurFactor(), options.isEnableFade(), options.getFadeDuration(), null);
+            load(iv, imageUri, options.getDefaultUri(), options.isEnableBlur(), options.getBlurFactor(), options.isEnableFade(), options.getFadeDuration(), null);
         } else {
             load(iv, imageUri);
         }
     }
 
-    private static void load(final ImageView iv, final String imageUri, final String defaultUri, final String cacheUri, final long cacheExpiredDuration, final boolean enableBlur, final int blurFactor, final boolean enableFade, final int fadeDuration, ImageLoaderProListener imageLoaderProListener) {
+    private static void load(final ImageView iv, final String imageUri, final String defaultUri, final boolean enableBlur, final int blurFactor, final boolean enableFade, final int fadeDuration, ImageLoaderProListener imageLoaderProListener) {
         Log.i(TAG, "load");
         if (imageLoaderProListener != null) {
             IMAGE_LOADER.displayImage(imageUri, iv, imageLoaderProListener);
             return;
         }
-        boolean hasNetwork = isNetworkAvailable();
-        if (hasNetwork) {
-            Log.i(TAG, "load\thas network");
-            boolean hasCache = isFileExist(cacheUri);
-            boolean isExpired = isFileExpired(cacheUri, cacheExpiredDuration);
-            if (!hasCache || isExpired) {
-                IMAGE_LOADER.displayImage(imageUri, iv, new ImageLoaderProListener(cacheUri, cacheExpiredDuration, enableBlur, blurFactor, enableFade, fadeDuration) {
+        IMAGE_LOADER.displayImage(imageUri, iv, new ImageLoaderProListener(enableBlur, blurFactor, enableFade, fadeDuration) {
+            @Override
+            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                if (defaultUri == null) {
+                    return;
+                }
+                //Default
+                IMAGE_LOADER.displayImage(defaultUri, iv, new ImageLoaderProListener(enableBlur, blurFactor, enableFade, fadeDuration) {
                     @Override
                     public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                        if (defaultUri == null) {
-                            return;
-                        }
-                        //Default
-                        IMAGE_LOADER.displayImage(defaultUri, iv, new ImageLoaderProListener(null, 0, enableBlur, blurFactor, enableFade, fadeDuration) {
-                            @Override
-                            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                                super.onLoadingFailed(imageUri, view, failReason);
-                            }
-                        });
+                        super.onLoadingFailed(imageUri, view, failReason);
                     }
                 });
-            } else {
-                loadOffline(iv, defaultUri, cacheUri, enableBlur, blurFactor, enableFade, fadeDuration);
-            }
-
-        } else {
-            Log.i(TAG, "load\tno network");
-            boolean hasCache = isFileExist(cacheUri);
-            if (hasCache) {
-                loadOffline(iv, defaultUri, cacheUri, enableBlur, blurFactor, enableFade, fadeDuration);
-            } else {
-                //Default
-                loadDefault(iv, defaultUri, enableBlur, blurFactor, enableFade, fadeDuration);
-            }
-
-        }
-    }
-
-    private static void loadOffline(final ImageView iv, final String defaultUri, final String cacheUri, final boolean enableBlur, final int blurFactor, final boolean enableFade, final int fadeDuration) {
-        IMAGE_LOADER.displayImage(PATH_FILE + cacheUri, iv, new ImageLoaderProListener(null, 0, enableBlur, blurFactor, enableFade, fadeDuration) {
-            @Override
-            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                loadDefault(iv, defaultUri, enableBlur, blurFactor, enableFade, fadeDuration);
             }
         });
-    }
-
-    private static void loadDefault(final ImageView iv, final String defaultUri, final boolean enableBlur, final int blurFactor, final boolean enableFade, final int fadeDuration) {
-        //Default
-        IMAGE_LOADER.displayImage(defaultUri, iv, new ImageLoaderProListener(null, 0, enableBlur, blurFactor, enableFade, fadeDuration) {
-            @Override
-            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-                super.onLoadingFailed(imageUri, view, failReason);
-            }
-        });
-    }
-
-    private static boolean isFileExist(String path) {
-        if (path == null) {
-            return false;
-        }
-        File f = new File(path);
-        if (f.length() == 0) {
-            return false;
-        }
-        return f.exists();
-    }
-
-    private static boolean isFileExpired(String path, long expiredDuration) {
-        if (path == null) {
-            return true;
-        }
-        File file = new File(path);
-        if (file.exists()) {
-            long lastModified = file.lastModified();
-            if (System.currentTimeMillis() - lastModified > expiredDuration) {
-                return true;
-            } else {
-                return false;
-            }
-
-        } else {
-            return true;
-        }
-
-    }
-
-    public static boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return (activeNetworkInfo != null) && activeNetworkInfo.isConnected();
     }
 
     public static void clearCache() {
@@ -213,30 +133,10 @@ public class ImageLoaderPro {
     }
 
     private static class ImageLoaderProListener extends SimpleImageLoadingListener {
-        private String cacheUri;
-        private long cacheExpiredDuration;
         private boolean enableBlur;
         private int blurFactor;
         private boolean enableFade;
         private int fadeDuration;
-
-        public String getCacheUri() {
-            return cacheUri;
-        }
-
-        public ImageLoaderProListener setCacheUri(String cacheUri) {
-            this.cacheUri = cacheUri;
-            return this;
-        }
-
-        public long getCacheExpiredDuration() {
-            return cacheExpiredDuration;
-        }
-
-        public ImageLoaderProListener setCacheExpiredDuration(long cacheExpiredDuration) {
-            this.cacheExpiredDuration = cacheExpiredDuration;
-            return this;
-        }
 
         public boolean isEnableBlur() {
             return enableBlur;
@@ -274,9 +174,7 @@ public class ImageLoaderPro {
             return this;
         }
 
-        public ImageLoaderProListener(String cacheUri, long cacheExpiredDuration, boolean enableBlur, int blurFactor, boolean enableFade, int fadeDuration) {
-            this.cacheUri = cacheUri;
-            this.cacheExpiredDuration = cacheExpiredDuration;
+        public ImageLoaderProListener(boolean enableBlur, int blurFactor, boolean enableFade, int fadeDuration) {
             this.enableBlur = enableBlur;
             this.blurFactor = blurFactor;
             this.enableFade = enableFade;
@@ -287,23 +185,10 @@ public class ImageLoaderPro {
         @Override
         public void onLoadingComplete(String imageUri, View view, Bitmap bitmap) {
             super.onLoadingComplete(imageUri, view, bitmap);
-
+            Log.i(TAG, "onLoadingComplete\timageUri:" + imageUri);
             boolean firstDisplay = !DISPLAYED_IMAGES.contains(imageUri);
             if (firstDisplay) {
                 DISPLAYED_IMAGES.add(imageUri);
-            }
-            //process cache
-            boolean enableWriteCache = cacheUri != null;
-            if (enableWriteCache) {
-                boolean hasCache = isFileExist(imageUri);
-                boolean isExpired = isFileExpired(cacheUri, cacheExpiredDuration);
-                if (hasCache) {
-                    if (isExpired) {
-                        saveToCache(bitmap);
-                    }
-                } else {
-                    saveToCache(bitmap);
-                }
             }
 
             //process blur
@@ -316,26 +201,8 @@ public class ImageLoaderPro {
             }
         }
 
-        private void saveToCache(final Bitmap bitmap) {
-            (new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        FileOutputStream localFileOutputStream = new FileOutputStream(cacheUri);
-                        Bitmap.CompressFormat localCompressFormat = Bitmap.CompressFormat.JPEG;
-                        bitmap.compress(localCompressFormat, 96, localFileOutputStream);
-                        localFileOutputStream.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            })).start();
-        }
-
         public static ImageLoaderProListener clone(ImageLoaderProListener imageLoaderProListener) {
             return new ImageLoaderProListener(
-                    imageLoaderProListener.getCacheUri(),
-                    imageLoaderProListener.getCacheExpiredDuration(),
                     imageLoaderProListener.isEnableBlur(),
                     imageLoaderProListener.getBlurFactor(),
                     imageLoaderProListener.isEnableFade(),
@@ -345,8 +212,6 @@ public class ImageLoaderPro {
 
     public static class Options {
         private String defaultUri = null;
-        private String cacheUri = null;
-        private long cacheExpiredDuration = 0;
         private boolean enableBlur = false;
         private int blurFactor = 0;
         private boolean enableFade = true;
@@ -358,24 +223,6 @@ public class ImageLoaderPro {
 
         public Options setDefaultUri(String defaultUri) {
             this.defaultUri = defaultUri;
-            return this;
-        }
-
-        public String getCacheUri() {
-            return cacheUri;
-        }
-
-        public Options setCacheUri(String cacheUri) {
-            this.cacheUri = cacheUri;
-            return this;
-        }
-
-        public long getCacheExpiredDuration() {
-            return cacheExpiredDuration;
-        }
-
-        public Options setCacheExpiredDuration(long cacheExpiredDuration) {
-            this.cacheExpiredDuration = cacheExpiredDuration;
             return this;
         }
 
