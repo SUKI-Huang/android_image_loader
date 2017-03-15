@@ -142,15 +142,19 @@ public class ImageLoaderPro {
             IMAGE_LOADER.displayImage(imageUri, iv, imageLoaderProListener);
             return;
         }
+        File fileCache = IMAGE_LOADER.getDiskCache().get(imageUri);
         boolean hasNetwork = isNetworkAvailable();
         boolean isFile = imageUri.indexOf("file://") == 0;
         boolean isDrawable = imageUri.indexOf("drawable://") == 0;
         boolean isAssets = imageUri.indexOf("assets://") == 0;
+        boolean hasFileCache=isExist(fileCache);
         if (hasNetwork && !isFile && !isDrawable && !isAssets) {
-            File fileCache = IMAGE_LOADER.getDiskCache().get(imageUri);
-            if (isExist(fileCache)) {
+            if (hasFileCache) {
                 if (isFileExpired(fileCache, cacheExpiredDuration)) {
                     DiskCacheUtils.removeFromCache(imageUri,IMAGE_LOADER.getDiskCache());
+                }else{
+                    load(iv, getFileUri(fileCache.getAbsolutePath()), defaultUri, cacheExpiredDuration, enableBlur, blurFactor, enableFade, fadeDuration, imageLoaderProListener);
+                    return;
                 }
             }
         }
