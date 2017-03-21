@@ -261,6 +261,11 @@ public class ImageLoaderPro {
             return this;
         }
 
+        public ImageLoaderProListener setCacheExpiredForever() {
+            this.cacheExpiredMillisecond = Long.MAX_VALUE;
+            return this;
+        }
+
         public boolean isEnableBlur() {
             return enableBlur;
         }
