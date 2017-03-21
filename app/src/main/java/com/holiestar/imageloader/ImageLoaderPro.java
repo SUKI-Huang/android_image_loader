@@ -114,11 +114,11 @@ public class ImageLoaderPro {
     }
 
     public static void load(ImageView iv, String imageUri) {
-        load(iv, imageUri, OPTION_NORMAL.getDefaultUri(), OPTION_NORMAL.getCacheExpiredDuration(), OPTION_NORMAL.isEnableBlur(), OPTION_NORMAL.getBlurFactor(), OPTION_NORMAL.isEnableFade(), OPTION_NORMAL.getFadeDuration(), IMAGE_LOADER_PRO_LISTENER_NORMAL);
+        load(iv, imageUri, OPTION_NORMAL.getDefaultUri(), OPTION_NORMAL.getCacheExpiredMillisecond(), OPTION_NORMAL.isEnableBlur(), OPTION_NORMAL.getBlurFactor(), OPTION_NORMAL.isEnableFade(), OPTION_NORMAL.getFadeDuration(), IMAGE_LOADER_PRO_LISTENER_NORMAL);
     }
 
     public static void loadBlur(ImageView iv, String imageUri) {
-        load(iv, imageUri, OPTION_BLUR.getDefaultUri(), OPTION_BLUR.getCacheExpiredDuration(), OPTION_BLUR.isEnableBlur(), OPTION_BLUR.getBlurFactor(), OPTION_BLUR.isEnableFade(), OPTION_BLUR.getFadeDuration(), IMAGE_LOADER_PRO_LISTENER_BLUR);
+        load(iv, imageUri, OPTION_BLUR.getDefaultUri(), OPTION_BLUR.getCacheExpiredMillisecond(), OPTION_BLUR.isEnableBlur(), OPTION_BLUR.getBlurFactor(), OPTION_BLUR.isEnableFade(), OPTION_BLUR.getFadeDuration(), IMAGE_LOADER_PRO_LISTENER_BLUR);
     }
 
     public static void loadBlur(ImageView iv, String imageUri, @IntRange(from = 0, to = 25) int blurFactor) {
@@ -127,7 +127,7 @@ public class ImageLoaderPro {
 
     public static void load(ImageView iv, String imageUri, Options options) {
         if (options != null) {
-            load(iv, imageUri, options.getDefaultUri(), options.getCacheExpiredDuration(), options.isEnableBlur(), options.getBlurFactor(), options.isEnableFade(), options.getFadeDuration(), null);
+            load(iv, imageUri, options.getDefaultUri(), options.getCacheExpiredMillisecond(), options.isEnableBlur(), options.getBlurFactor(), options.isEnableFade(), options.getFadeDuration(), null);
         } else {
             load(iv, imageUri);
         }
@@ -236,45 +236,6 @@ public class ImageLoaderPro {
             return cacheExpiredMillisecond;
         }
 
-        public ImageLoaderProListener setCacheExpiredMillisecond(long cacheExpiredMillisecond) {
-            this.cacheExpiredMillisecond = cacheExpiredMillisecond;
-            return this;
-        }
-
-        public ImageLoaderProListener setCacheExpiredSeconds(long seconds) {
-            this.cacheExpiredMillisecond = seconds*1000l;
-            return this;
-        }
-
-        public ImageLoaderProListener setCacheExpiredMins(long mins) {
-            this.cacheExpiredMillisecond = mins*60000l;
-            return this;
-        }
-
-        public ImageLoaderProListener setCacheExpiredDays(long days) {
-            this.cacheExpiredMillisecond = days*86400000l;
-            return this;
-        }
-
-        public ImageLoaderProListener setCacheExpiredOneDay() {
-            this.cacheExpiredMillisecond = 86400000l;
-            return this;
-        }
-
-        public ImageLoaderProListener setCacheExpiredWeeks(long weeks) {
-            this.cacheExpiredMillisecond = weeks*604800000l;
-            return this;
-        }
-
-        public ImageLoaderProListener setCacheExpiredOneWeeks() {
-            this.cacheExpiredMillisecond = 604800000l;
-            return this;
-        }
-
-        public ImageLoaderProListener setCacheExpiredForever() {
-            this.cacheExpiredMillisecond = Long.MAX_VALUE;
-            return this;
-        }
 
         public boolean isEnableBlur() {
             return enableBlur;
@@ -298,17 +259,16 @@ public class ImageLoaderPro {
             return enableFade;
         }
 
-//        public ImageLoaderProListener setEnableFade(boolean enableFade) {
-//            this.enableFade = enableFade;
-//            return this;
-//        }
+        public ImageLoaderProListener setEnableFade(boolean enableFade) {
+            this.enableFade = enableFade;
+            return this;
+        }
 
         public int getFadeDuration() {
             return fadeDuration;
         }
 
         public ImageLoaderProListener setFadeDuration(int fadeDuration) {
-            this.enableFade=true;
             this.fadeDuration = fadeDuration;
             return this;
         }
@@ -356,7 +316,7 @@ public class ImageLoaderPro {
 
     public static class Options {
         private String defaultUri = null;
-        private long cacheExpiredDuration = 0;
+        private long cacheExpiredMillisecond = 0;
         private boolean enableBlur = false;
         private int blurFactor = 0;
         private boolean enableFade = true;
@@ -372,12 +332,53 @@ public class ImageLoaderPro {
         }
 
 
-        public long getCacheExpiredDuration() {
-            return cacheExpiredDuration;
+        public long getCacheExpiredMillisecond() {
+            return cacheExpiredMillisecond;
         }
 
-        public Options setCacheExpiredDuration(long cacheExpiredDuration) {
-            this.cacheExpiredDuration = cacheExpiredDuration;
+        @Deprecated
+        public Options setCacheExpiredDuration(long cacheExpiredMillisecond) {
+            this.cacheExpiredMillisecond = cacheExpiredMillisecond;
+            return this;
+        }
+
+        public Options setCacheExpiredMillisecond(long cacheExpiredMillisecond) {
+            this.cacheExpiredMillisecond = cacheExpiredMillisecond;
+            return this;
+        }
+
+        public Options setCacheExpiredSeconds(long seconds) {
+            this.cacheExpiredMillisecond = seconds*1000l;
+            return this;
+        }
+
+        public Options setCacheExpiredMins(long mins) {
+            this.cacheExpiredMillisecond = mins*60000l;
+            return this;
+        }
+
+        public Options setCacheExpiredDays(long days) {
+            this.cacheExpiredMillisecond = days*86400000l;
+            return this;
+        }
+
+        public Options setCacheExpiredOneDay() {
+            this.cacheExpiredMillisecond = 86400000l;
+            return this;
+        }
+
+        public Options setCacheExpiredWeeks(long weeks) {
+            this.cacheExpiredMillisecond = weeks*604800000l;
+            return this;
+        }
+
+        public Options setCacheExpiredOneWeeks() {
+            this.cacheExpiredMillisecond = 604800000l;
+            return this;
+        }
+
+        public Options setCacheExpiredForever() {
+            this.cacheExpiredMillisecond = Long.MAX_VALUE;
             return this;
         }
 
