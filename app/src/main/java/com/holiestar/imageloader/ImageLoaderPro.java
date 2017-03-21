@@ -256,8 +256,18 @@ public class ImageLoaderPro {
             return this;
         }
 
+        public ImageLoaderProListener setCacheExpiredOneDay() {
+            this.cacheExpiredMillisecond = 86400000l;
+            return this;
+        }
+
         public ImageLoaderProListener setCacheExpiredWeeks(long weeks) {
             this.cacheExpiredMillisecond = weeks*604800000l;
+            return this;
+        }
+
+        public ImageLoaderProListener setCacheExpiredOneWeeks() {
+            this.cacheExpiredMillisecond = 604800000l;
             return this;
         }
 
