@@ -226,18 +226,38 @@ public class ImageLoaderPro {
     }
 
     private static class ImageLoaderProListener extends SimpleImageLoadingListener {
-        private long cacheExpiredDuration;
+        private long cacheExpiredMillisecond;
         private boolean enableBlur;
         private int blurFactor;
         private boolean enableFade;
         private int fadeDuration;
 
-        public long getCacheExpiredDuration() {
-            return cacheExpiredDuration;
+        public long getCacheExpiredMillisecond() {
+            return cacheExpiredMillisecond;
         }
 
-        public ImageLoaderProListener setCacheExpiredDuration(long cacheExpiredDuration) {
-            this.cacheExpiredDuration = cacheExpiredDuration;
+        public ImageLoaderProListener setCacheExpiredMillisecond(long cacheExpiredMillisecond) {
+            this.cacheExpiredMillisecond = cacheExpiredMillisecond;
+            return this;
+        }
+
+        public ImageLoaderProListener setCacheExpiredSeconds(long seconds) {
+            this.cacheExpiredMillisecond = seconds*1000l;
+            return this;
+        }
+
+        public ImageLoaderProListener setCacheExpiredMins(long mins) {
+            this.cacheExpiredMillisecond = mins*60000l;
+            return this;
+        }
+
+        public ImageLoaderProListener setCacheExpiredDays(long days) {
+            this.cacheExpiredMillisecond = days*86400000l;
+            return this;
+        }
+
+        public ImageLoaderProListener setCacheExpiredWeeks(long weeks) {
+            this.cacheExpiredMillisecond = weeks*604800000l;
             return this;
         }
 
@@ -263,22 +283,23 @@ public class ImageLoaderPro {
             return enableFade;
         }
 
-        public ImageLoaderProListener setEnableFade(boolean enableFade) {
-            this.enableFade = enableFade;
-            return this;
-        }
+//        public ImageLoaderProListener setEnableFade(boolean enableFade) {
+//            this.enableFade = enableFade;
+//            return this;
+//        }
 
         public int getFadeDuration() {
             return fadeDuration;
         }
 
         public ImageLoaderProListener setFadeDuration(int fadeDuration) {
+            this.enableFade=true;
             this.fadeDuration = fadeDuration;
             return this;
         }
 
-        public ImageLoaderProListener(long cacheExpiredDuration, boolean enableBlur, int blurFactor, boolean enableFade, int fadeDuration) {
-            this.cacheExpiredDuration = cacheExpiredDuration;
+        public ImageLoaderProListener(long cacheExpiredMillisecond, boolean enableBlur, int blurFactor, boolean enableFade, int fadeDuration) {
+            this.cacheExpiredMillisecond = cacheExpiredMillisecond;
             this.enableBlur = enableBlur;
             this.blurFactor = blurFactor;
             this.enableFade = enableFade;
@@ -307,7 +328,7 @@ public class ImageLoaderPro {
 
         public static ImageLoaderProListener clone(ImageLoaderProListener imageLoaderProListener) {
             return new ImageLoaderProListener(
-                    imageLoaderProListener.getCacheExpiredDuration(),
+                    imageLoaderProListener.getCacheExpiredMillisecond(),
                     imageLoaderProListener.isEnableBlur(),
                     imageLoaderProListener.getBlurFactor(),
                     imageLoaderProListener.isEnableFade(),
