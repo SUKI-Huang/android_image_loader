@@ -319,6 +319,9 @@ public class ImageLoaderPro {
             this.blurFactor = blurFactor;
             this.enableFade = enableFade;
             this.fadeDuration = fadeDuration;
+            if(fadeDuration!=0){
+                this.enableFade=true;
+            }
         }
 
 
